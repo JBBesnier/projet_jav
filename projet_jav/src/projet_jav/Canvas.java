@@ -5,12 +5,12 @@ import javax.swing.JPanel;
 import java.awt.Graphics2D;
 
 public class Canvas extends JPanel {
-	
-	/**
+	/*
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+	// Utile uniquement lors de sérialisation : pas besoin ici mais laissé par acquis de conscience
+
 	protected Poisson[] poisson;
 	protected Zones_dangereuses[] zones;
 	protected int L;
@@ -22,11 +22,10 @@ public class Canvas extends JPanel {
 		this.l = l;
 		this.L = L;
 	}
-	
-
+	//
 	@Override
     public void paintComponent(Graphics gg) {
-        super.paintComponent(gg);
+        super.paintComponent(gg); //
         Graphics2D g = (Graphics2D) gg;
         for (int i=0 ; i < zones.length ; i++) {
         	this.zones[i].draw(g);	

@@ -12,8 +12,6 @@ public class Zones_dangereuses {
 	protected int id;
 	protected Vect Position;
 	static final Path2D shape = new Path2D.Double();
-	
-	
 	Random random = new Random();
 	
 	public Zones_dangereuses(int id , int L , int l) {
@@ -32,7 +30,6 @@ public class Zones_dangereuses {
         int y = (int) this.Position.toArray()[1];
         if(this instanceof Objet_physique) {
         	g.setColor(Color.blue);
-        	g.fill(shape);
             g.fillOval(x - ((Objet_physique) this).Rayon, y - ((Objet_physique) this).Rayon, 2*((Objet_physique) this).Rayon, 2*((Objet_physique) this).Rayon);
         }
         else {
