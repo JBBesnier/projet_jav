@@ -24,10 +24,13 @@ public class Predateurs extends Zones_dangereuses {
 	}
 	
 	public void deplacement(Zones_dangereuses[] zones , Poisson[] poissons) {
-		double perception = 100;
+		double perception;
 		ArrayList<Zones_dangereuses> voisins = new ArrayList<Zones_dangereuses>();
 		
 		for(Zones_dangereuses autre : zones) {
+			if (autre instanceof Objet_physique) {
+				perception = ((Objet_physique) autre).Rayon + 30;
+			}else {perception=80;}
 			double d = Vect.dist(this.Position,autre.Position);
 			if (autre != this && d <= perception) {
 				voisins.add(autre);
@@ -48,14 +51,12 @@ public class Predateurs extends Zones_dangereuses {
 		Vect moyenne = new Vect(0,0);
 		if (voisins.size() != 0) {
 			for(int i = 0 ; i < voisins.size()  ; i++) {
-				double distance = Vect.dist(this.Position,voisins.get(i).Position);
 				Vect diff = new Vect(0,0);
 				diff = Vect.sub(this.Position, voisins.get(i).Position);
-				diff.div(distance);
 				moyenne.add(diff);
 			}
 			moyenne.div(voisins.size());
-			moyenne.limit(0.1);
+			moyenne.limit(0.3);
 		}
 		return moyenne;
 	}

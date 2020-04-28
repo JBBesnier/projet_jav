@@ -14,19 +14,17 @@ public class Poisson{
 	Random random = new Random();
 	
 	// variables globales
-	int id;
-	Vect Position;
-	Vect Vitesse;
-	double maxForce;
-	static final int size = 3;
-    static final Path2D shape = new Path2D.Double();
+	protected int id;
+	protected Vect Position;
+	protected Vect Vitesse;
+	protected static final int size = 3;
+    protected static final Path2D shape = new Path2D.Double();
 	
 	public Poisson(int id, int L, int l) {
 		this.id = id;
 		this.Position = new Vect(random.nextInt(L),random.nextInt(l));
 		double x = 2*random.nextDouble()-1;
 		this.Vitesse = new Vect(x,sqrt(1-pow(x,2)));
-		this.maxForce = 0.08;
 	}
 	
 	static {
@@ -68,7 +66,7 @@ public class Poisson{
 			moyenne.add(voisins.get(i).Vitesse); 
 		}
 		moyenne.div(voisins.size());
-		moyenne.limit(this.maxForce);
+		moyenne.limit(0.08);
 		return moyenne;
 	}
 	
@@ -91,7 +89,7 @@ public class Poisson{
 				moyenne.add(diff);
 			}
 			moyenne.div(collants.size());
-			moyenne.limit(this.maxForce);
+			moyenne.limit(0.08);
 		}
 		return moyenne;
 	}
@@ -111,7 +109,7 @@ public class Poisson{
 		}
 		moyenne.div(voisins.size());
 		moyenne.sub(this.Position);
-		moyenne.limit(this.maxForce);
+		moyenne.limit(0.08);
 		return moyenne;
 	}
 	
@@ -152,9 +150,12 @@ public class Poisson{
 	}
 	
 	public Vect eviter(Zones_dangereuses[] dangereux) {
-		double perception = 70;
+		double perception;
 		ArrayList<Zones_dangereuses> danger = new ArrayList<Zones_dangereuses>();
 		for(Zones_dangereuses zone : dangereux) {
+			if (zone instanceof Objet_physique) {
+				perception = ((Objet_physique) zone).Rayon + 30;
+			}else {perception=50;}
 					double d = Vect.dist(this.Position,zone.Position);
 					if (d <= perception) {
 						danger.add(zone);			
@@ -163,10 +164,8 @@ public class Poisson{
 		Vect moyenne = new Vect(0,0);
 		if (danger.size() != 0) {
 			for(int i = 0 ; i < danger.size()  ; i++) {
-				double distance = Vect.dist(this.Position,danger.get(i).Position);
 				Vect diff = new Vect(0,0);
 				diff = Vect.sub(this.Position, danger.get(i).Position);
-				diff.div(distance);
 				moyenne.add(diff);
 			}
 			moyenne.div(danger.size());
@@ -202,8 +201,8 @@ public class Poisson{
 	}
 	
 	public static Poisson[] creation_poisson(int nb , Zones_dangereuses[] zones , int L , int l) {
-		Poisson[] poissons = new Poisson[100];
-		for(int i=0 ; i < 100 ; i++) {
+		Poisson[] poissons = new Poisson[nb];
+		for(int i=0 ; i < nb ; i++) {
 			poissons[i] = Poisson.apparition(zones,i,L,l);
 		}
 		return poissons;
@@ -220,6 +219,6 @@ public class Poisson{
 			zones[2403+j] = new Objet_physique(2409+j,1,new Vect(799,j));
 		}*/
 		
-		Fenetre fen = new Fenetre(800,800,10,5,100);
+		new Fenetre(800,800);
 	}
 }

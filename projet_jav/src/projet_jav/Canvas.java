@@ -3,10 +3,6 @@ package projet_jav;
 import java.awt.Graphics;
 import javax.swing.JPanel;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.io.File;
-import javax.imageio.ImageIO;
-import java.io.IOException;
 
 public class Canvas extends JPanel {
 	
@@ -36,5 +32,6 @@ public class Canvas extends JPanel {
         	this.zones[i].draw(g);	
         }
         Poisson.run(this.poisson,this.zones,g,L,l);
+        g.fillRect(L, 0, 1, l);
         }
 	}
