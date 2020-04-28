@@ -32,6 +32,6 @@ public class Canvas extends JPanel {
         	this.zones[i].draw(g);	
         }
         Poisson.run(this.poisson,this.zones,g,L,l);
-        g.fillRect(L, 0, 1, l);
+        g.fillRect(L-2, 0, 1, l);
         }
 	}
