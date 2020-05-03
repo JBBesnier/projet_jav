@@ -2,14 +2,13 @@ package projet_jav;
 
 import static java.lang.Math.*;
 
+/**	Classe générique pour créer des Vecteurs.
+ * Elle a été choisi au détriment de la classe Vector de Java.util 
+ * car on peut facilement la remodeler à notre convenance.
+ * @author Jean-Baptiste
+ */
+
 public class Vect {
-	/*	Cette classe est une classe générique pour créer des Vecteurs.
-	 * Elle a été choisi au détriment de la classe Vector de Java.util 
-	 * car on peut facilement la remodeler à notre convenance.
-	 * La classe Vector de Java.util nous posait notament problème pour 
-	 * récupérer des éléments dans les Vectors
-	 */
-	
 	// Paramètres :
     double x, y;
     

@@ -4,12 +4,17 @@ import javax.swing.*;  		// bibliothèque pour la gestion des fenêtres
 import java.awt.*; 			// éléments pour interfaces graphiques
 import java.awt.event.*; 	// éléments permettant l'écoute et l'action sur l'interface graphique
 
+/**Classe servant à la création d'une fenêtre pour récupérer les paramètres 
+ * utilisateurs et lancer la simulation.
+ * @author Jean-Baptiste
+ */
+
 public class Fenetre extends JFrame implements Runnable{
 	
 	private static final long serialVersionUID = 1L;
 	// Utile uniquement lors de sérialisation : pas besoin ici mais laissé par acquis de conscience
 	
-	// variables globales
+	// Paramètres :
 	protected Thread affichage = new Thread(this);
 		// Objets
 	protected Poisson[] poissons;
@@ -26,6 +31,8 @@ public class Fenetre extends JFrame implements Runnable{
 	protected JTextField nb_obj = new JTextField("10");
 	protected JTextField taille_min = new JTextField("0");
 	protected JTextField taille_max = new JTextField("60");
+	protected JTextField vitesse_pred = new JTextField("1.25");
+	protected JTextField vitesse_rep = new JTextField("1000");
 	
 	public Fenetre(int L, int l) {
 		// Constructeur de la fenêtre de simulation
@@ -34,14 +41,14 @@ public class Fenetre extends JFrame implements Runnable{
 		this.setTitle("---- Simulation d'un banc de poisson ---- Camille B - Jean-Baptiste B - Corentin P ----");
 		this.L = L;
 		this.l = l;
-		this.setSize(L+285, l+15); // +285 et +15 pour gérer le bandeau et les boutons
+		this.setSize(L+315, l+15); // +285 et +15 pour gérer le bandeau et les boutons
 		this.setResizable(false);
 		this.setLocationRelativeTo(null);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 			// Création du panneau de la fenêtre
 		JPanel panneau = creerPanel();
-		panneau.setPreferredSize(new Dimension(270,l));
+		panneau.setPreferredSize(new Dimension(300,l));
 		this.getContentPane().add(panneau , BorderLayout.EAST);
 		
 		this.setVisible(true);
@@ -83,7 +90,7 @@ public class Fenetre extends JFrame implements Runnable{
 		ActionListener commencer = new ActionListener() {
 			@Override
 			public void actionPerformed (ActionEvent action) {
-				verification();
+				commencer();
 			}
 		};
 		JPanel panneau = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -109,42 +116,50 @@ public class Fenetre extends JFrame implements Runnable{
 		nb_pois.setPreferredSize(new Dimension (50 , 20));
 		panneau.add(nb_pois);
 		
-		JLabel texte2 = new JLabel ("Nombre de prédateurs = ");
+		JLabel texte2 = new JLabel ("Nombre d'itérations avant reproduction = ");
 		panneau.add(texte2);
+		vitesse_rep.setPreferredSize(new Dimension (50 , 20));
+		panneau.add(vitesse_rep);
+		
+		JLabel texte3 = new JLabel ("Nombre de prédateurs = ");
+		panneau.add(texte3);
 		nb_pred.setPreferredSize(new Dimension (50 , 20));
 		panneau.add(nb_pred);
 		
-		JLabel texte3 = new JLabel ("Nombre d'objets physiques = ");
-		panneau.add(texte3);
+		JLabel texte4 = new JLabel ("Vitesse des prédateurs = ");
+		panneau.add(texte4);
+		vitesse_pred.setPreferredSize(new Dimension (50 , 20));
+		panneau.add(vitesse_pred);
+		
+		JLabel texte5 = new JLabel ("Nombre d'objets physiques = ");
+		panneau.add(texte5);
 		nb_obj.setPreferredSize(new Dimension (50 , 20));
 		panneau.add(nb_obj);
 		
-		JLabel texte4 = new JLabel ("Taille minimale des obstacles = ");
-		panneau.add(texte4);
+		JLabel texte6 = new JLabel ("Taille minimale des obstacles = ");
+		panneau.add(texte6);
 		taille_min.setPreferredSize(new Dimension (50 , 20));
 		panneau.add(taille_min);
 		
-		JLabel texte5 = new JLabel ("Taille maximale des obstacles = ");
-		panneau.add(texte5);
+		JLabel texte7 = new JLabel ("Taille maximale des obstacles = ");
+		panneau.add(texte7);
 		taille_max.setPreferredSize(new Dimension (50 , 20));
 		panneau.add(taille_max);
 		
 		return panneau;
 	}
 	
-	public void verification() {
-		// On s'assure de ne pas avoir d'erreurs et on crée
-		// nos objets avant de lancer la simulation
+	public void commencer() {
+		// On s'assure de ne pas avoir d'erreurs avant de lancer la simulation
 		if (this.affichage.isAlive()) {
 			this.affichage.interrupt();
 			this.affichage = new Thread(this);
 		}
 		try {
 			get_elements();
-			if (Objet_physique.R_min > Objet_physique.R_max) { // On vérifie la cohérence des entrées
-				new Fenetre (380 , 100 ,"On doit avoir : rayon minimal < rayon maximal.");
+			} catch (ExceptionRayonMinimum e) {
+				new Fenetre (330 , 100 ,"On doit avoir : rayon minimum < rayon maximum");
 				return;
-			}
 			} catch (NumberFormatException e) {
 				new Fenetre (380 , 100 ,"Vous n'avez pas rentré un nombre entier dans un champ.");
 				return;
@@ -152,10 +167,8 @@ public class Fenetre extends JFrame implements Runnable{
 				new Fenetre (350 , 100 ,"Vous avez rentré un nombre négatif dans un champ.");
 				return;
 		}
-		this.zones = Zones_dangereuses.creation_zones(this.nb_objets, this.nb_predateurs, this.L, this.l);
-		this.poissons = Poisson.creation_poisson(this.nb_poissons, this.zones, this.L, this.l);
 		
-		this.affichage.start(); // et si tout va bien : on lance
+		this.affichage.start(); // si tout va bien : on lance
 	}
 	
 	public void fermer() {
@@ -166,21 +179,31 @@ public class Fenetre extends JFrame implements Runnable{
 		this.dispose();
 	}
 	
-	public void get_elements () {
+	public void get_elements () throws ExceptionRayonMinimum {
 		// On récupère tout les éléments du menu de la fenêtre pour la simulation
+		// et gère une exception créée
 		this.nb_poissons = Integer.parseInt(this.nb_pois.getText());
 		this.nb_objets = Integer.parseInt(this.nb_obj.getText());
 		this.nb_predateurs = Integer.parseInt(this.nb_pred.getText());
 		Objet_physique.R_max = Integer.parseInt(this.taille_max.getText());
 		Objet_physique.R_min = Integer.parseInt(this.taille_min.getText());
+		Predateurs.vitesse_predateurs = Double.parseDouble(this.vitesse_pred.getText());
+		Poisson.Vitesse_repro = Integer.parseInt(this.vitesse_rep.getText());
+		if (Objet_physique.R_min >= Objet_physique.R_max) {
+			throw new ExceptionRayonMinimum();
+		} else {
+		this.zones = Zones_dangereuses.creation_zones(this.nb_objets, this.nb_predateurs, this.L, this.l);
+		this.poissons = Poisson.creation_poisson(this.nb_poissons, this.zones, this.L, this.l);
+		}
 	}
 
 	public void run() {
+		// Coeur du programme permmettant tout les calculs
 		Canvas canvas = new Canvas(this.poissons, this.zones ,this.L,this.l);
 		this.setContentPane(canvas);
 		this.setLayout(new BorderLayout());
 		JPanel panneau = creerPanel();
-		panneau.setPreferredSize(new Dimension(270,l));
+		panneau.setPreferredSize(new Dimension(300,l));
 		this.getContentPane().add(panneau , BorderLayout.EAST);
 		this.validate();
 		Thread.currentThread();
